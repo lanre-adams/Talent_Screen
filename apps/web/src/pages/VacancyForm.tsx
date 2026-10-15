@@ -28,6 +28,7 @@ export default function VacancyForm() {
   const isRequest = !can('jobs.create');
   const [f, setF] = useState<any>({
     title: '', departmentId: '', location: '', employmentType: 'Full-time', description: '', closesOn: '',
+    project: '', numberOfPositions: 1, reportsTo: '', levelOfEffort: '', minimumRecruitmentStandard: '',
     minQualificationLevel: '3', fieldsOfStudy: '', minYears: 3, preferredYears: 5, locationRequirements: '',
     technicalSkills: '', requiredCertifications: '', softSkills: '', preferredSkills: '', requiredQualifications: '', preferredQualifications: '',
     industryExperience: '', mandatory: '', niceToHave: '', hiringManagerId: '', recruiterIds: [] as string[], customWeights: false, weights: { ...DEFAULT_W },
@@ -39,7 +40,9 @@ export default function VacancyForm() {
     const r = j.requirements; const join = (a: string[]) => (a ?? []).join(', ');
     setF({
       title: j.title, departmentId: j.department_id ?? '', location: j.location, employmentType: j.employment_type, description: j.description,
-      closesOn: j.closes_on?.slice(0, 10) ?? '', minQualificationLevel: String(r.minQualificationLevel), fieldsOfStudy: join(r.fieldsOfStudy),
+      closesOn: j.closes_on?.slice(0, 10) ?? '', project: j.project ?? '', numberOfPositions: j.number_of_positions ?? 1, reportsTo: j.reports_to ?? '',
+      levelOfEffort: j.level_of_effort ?? '', minimumRecruitmentStandard: j.minimum_recruitment_standard ?? '',
+      minQualificationLevel: String(r.minQualificationLevel), fieldsOfStudy: join(r.fieldsOfStudy),
       minYears: r.minYears, preferredYears: r.preferredYears, locationRequirements: r.locationRequirements ?? '',
       ...Object.fromEntries(LIST_FIELDS.map(([k]) => [k, join(r[k])])),
       hiringManagerId: j.hiring_manager_id ?? '', recruiterIds: j.recruiters.map((x: any) => x.id),
@@ -55,7 +58,9 @@ export default function VacancyForm() {
     if (f.customWeights && wsum !== 100) { setErr(`Weights total ${wsum}%. They must total 100%.`); return; }
     const body = {
       title: f.title.trim(), departmentId: f.departmentId || undefined, location: f.location, employmentType: f.employmentType, description: f.description,
-      closesOn: f.closesOn || undefined, hiringManagerId: f.hiringManagerId || undefined, recruiterIds: isRequest ? undefined : f.recruiterIds,
+      closesOn: f.closesOn || undefined, project: f.project || undefined, numberOfPositions: +f.numberOfPositions || 1, reportsTo: f.reportsTo || undefined,
+      levelOfEffort: f.levelOfEffort || undefined, minimumRecruitmentStandard: f.minimumRecruitmentStandard || undefined,
+      hiringManagerId: f.hiringManagerId || undefined, recruiterIds: isRequest ? undefined : f.recruiterIds,
       weightsOverride: f.customWeights ? Object.fromEntries(Object.entries(f.weights).map(([k, v]) => [k, +(v as number)])) : null,
       requirements: {
         minQualificationLevel: +f.minQualificationLevel, fieldsOfStudy: f.fieldsOfStudy, minYears: +f.minYears, preferredYears: +f.preferredYears,
@@ -72,7 +77,7 @@ export default function VacancyForm() {
   return (
     <form className="stack" onSubmit={submit}>
       <PageHead eyebrow={id ? existing.data.ref_code : isRequest ? 'Hiring request' : 'New vacancy'} title={id ? `Edit ${existing.data.title}` : isRequest ? 'Raise a hiring request' : 'Create a vacancy'}>
-        <button type="button" className="btn" onClick={() => nav(-1)}>Cancel</button>
+        <button type="button" className="btn primary" onClick={() => nav(-1)}>Cancel</button>
         <button className="btn primary" disabled={busy}>{id ? 'Save changes' : isRequest ? 'Submit request' : 'Create vacancy'}</button>
       </PageHead>
       {id && <div className="note brand">Changing requirements or weights re-scores every candidate on this vacancy. Previous evaluations stay in each candidate's history.</div>}
@@ -83,9 +88,14 @@ export default function VacancyForm() {
           <label className="f wide">Job title<input id="title" required minLength={3} value={f.title} onChange={set('title')} /></label>
           <label className="f">Department<select id="dept" value={f.departmentId} onChange={set('departmentId')}><option value="">—</option>{(depts.data ?? []).map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}</select></label>
           <label className="f">Location<input id="loc" value={f.location} onChange={set('location')} placeholder="e.g. Uyo, Akwa Ibom" /></label>
+          <label className="f">Project<input id="project" value={f.project} onChange={set('project')} placeholder="e.g. BRIDGE" /></label>
+          <label className="f">Number of positions<input id="npos" type="number" min={1} max={1000} value={f.numberOfPositions} onChange={set('numberOfPositions')} /></label>
+          <label className="f">Reports to<input id="reportsTo" value={f.reportsTo} onChange={set('reportsTo')} placeholder="e.g. State Director" /></label>
+          <label className="f">Level of effort<input id="levelOfEffort" value={f.levelOfEffort} onChange={set('levelOfEffort')} placeholder="e.g. 100%" /></label>
           <label className="f">Employment type<select id="type" value={f.employmentType} onChange={set('employmentType')}>{['Full-time', 'Part-time', 'Contract', 'Consultancy', 'Internship', 'Temporary'].map((t) => <option key={t}>{t}</option>)}</select></label>
           <label className="f">Closing date<input id="closes" type="date" value={f.closesOn} onChange={set('closesOn')} /></label>
           <label className="f wide">Job description<textarea id="desc" rows={4} value={f.description} onChange={set('description')} /></label>
+          <label className="f wide">Minimum recruitment standard<textarea id="minstd" rows={4} value={f.minimumRecruitmentStandard} onChange={set('minimumRecruitmentStandard')} placeholder="The minimum criteria as published in the advert, kept verbatim" /></label>
           <label className="f wide">Location requirements<input id="locreq" value={f.locationRequirements} onChange={set('locationRequirements')} placeholder="e.g. Must be able to travel to state offices" /></label>
         </div>
       </section>

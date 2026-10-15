@@ -1,5 +1,7 @@
 /* ECEWS TalentScreen — brand green shell, crimson accent, light and dark themes */
-:root {
+/* The light palette is also pinned onto .login, so the sign-in screen stays light
+   whatever theme the application is set to. */
+:root, .login {
   --green: #316C4E; --green-deep: #1E4634; --green-tint: #E7F0EA;
   --crimson: #B53043; --crimson-tint: #F8E6E9;
   --bg: #F3F6F4; --surface: #FFFFFF; --ink: #15231C; --muted: #5B6A62; --line: #DAE2DD; --line-strong: #C3CFC8;
@@ -11,16 +13,17 @@
   --f-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
   color-scheme: light;
 }
-@media (prefers-color-scheme: dark) {
-  :root {
-    --green: #62B386; --green-deep: #0C1712; --green-tint: #1B2E24;
-    --crimson: #E46B7C; --crimson-tint: #3A1E24;
-    --bg: #0F1613; --surface: #16211B; --ink: #E5EEE8; --muted: #97A99E; --line: #25352C; --line-strong: #33473B;
-    --amber: #E2A84B; --amber-tint: #33281A; --slate: #8FB0D6; --slate-tint: #1D2836;
-    --on-accent: #0C1712; --side-ink: #E5EEE8; --side-muted: #8FAA9A;
-    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.3);
-    color-scheme: dark;
-  }
+
+/* Dark palette. Selected by the theme toggle, and by the inline script in index.html
+   which resolves the operating-system preference before the first paint. */
+:root[data-theme="dark"] {
+  --green: #62B386; --green-deep: #0C1712; --green-tint: #1B2E24;
+  --crimson: #E46B7C; --crimson-tint: #3A1E24;
+  --bg: #0F1613; --surface: #16211B; --ink: #E5EEE8; --muted: #97A99E; --line: #25352C; --line-strong: #33473B;
+  --amber: #E2A84B; --amber-tint: #33281A; --slate: #8FB0D6; --slate-tint: #1D2836;
+  --on-accent: #0C1712; --side-ink: #E5EEE8; --side-muted: #8FAA9A;
+  --shadow: 0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.3);
+  color-scheme: dark;
 }
 * { box-sizing: border-box }
 html, body, #root { height: 100% }
@@ -111,6 +114,13 @@ td a, .list a { color: var(--ink); font-weight: 600; text-decoration: none } td 
 .bar.low i { background: var(--crimson) }
 label.f { display: flex; flex-direction: column; gap: 4px; font-size: .85rem; font-weight: 600; min-width: 0 }
 label.f small { font-weight: 400; color: var(--muted) }
+/* Reveal/hide control sitting inside a password field */
+.pw { position: relative; display: block }
+.pw input { padding-right: 44px }
+.pw-toggle { position: absolute; top: 50%; right: 4px; transform: translateY(-50%); border: 0; background: transparent; color: var(--muted); width: 32px; height: 32px; display: grid; place-items: center; cursor: pointer; padding: 0; border-radius: 8px }
+.pw-toggle svg { width: 19px; height: 19px }
+.pw-toggle:hover { background: var(--bg); color: var(--green) }
+.pw-toggle:focus-visible { outline: 2px solid var(--green); outline-offset: 1px }
 input:not([type=checkbox]):not([type=radio]):not([type=file]), select, textarea { border: 1px solid var(--line-strong); background: var(--surface); border-radius: 8px; padding: 8px 10px; width: 100%; font-weight: 400 }
 textarea { resize: vertical; min-height: 80px }
 .check { display: flex; gap: 8px; align-items: flex-start; font-size: .92rem }
@@ -140,6 +150,10 @@ legend { font-weight: 600; font-size: .85rem; padding: 0 4px }
 .assess b { font: 500 1.15rem var(--f-mono) }
 ul.ev { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 7px }
 ul.ev li small { display: block; color: var(--muted); font-style: italic }
+ul.ev li.gap-critical { color: var(--crimson); font-weight: 600 }
+ul.ev li.gap-critical::marker { color: var(--crimson) }
+ul.ev li.gap-moderate { color: var(--amber) }
+ul.ev li.gap-moderate::marker { color: var(--amber) }
 .section-title { font-size: .78rem; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); font-weight: 600; margin-bottom: 8px }
 .hbar { display: grid; grid-template-columns: minmax(90px, 160px) 1fr 40px; gap: 10px; align-items: center; font-size: .86rem }
 .donut { width: 140px; height: 140px; border-radius: 50%; flex: none; position: relative }
@@ -165,8 +179,11 @@ ul.ev li small { display: block; color: var(--muted); font-style: italic }
 .toast.err { background: var(--crimson); color: #fff }
 
 /* login */
-.login { min-height: 100%; display: grid; place-items: center; padding: 24px 16px; background: linear-gradient(160deg, var(--green-tint), var(--bg) 60%) }
-.login-card { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--shadow); width: min(420px, 100%); padding: 28px; display: flex; flex-direction: column; gap: 14px }
+/* `color` must be re-declared here, not just the variables: the value on `body`
+   was already resolved against the dark palette, and inherited text colour would
+   stay near-white on the light card below. */
+.login { min-height: 100%; display: grid; place-items: center; padding: 24px 16px; color: var(--ink); background: linear-gradient(160deg, var(--green-tint), var(--bg) 60%) }
+.login-card { background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--shadow); width: min(420px, 100%); padding: 28px; display: flex; flex-direction: column; gap: 14px }
 .login-card .logo { width: 140px; align-self: center; background: #fff; border-radius: 12px; padding: 8px }
 .login-card h1 { text-align: center; font-size: 1.35rem }
 .login-card .tagline { text-align: center; margin: -8px 0 4px; color: var(--crimson); font-style: italic; font-size: .9rem }
